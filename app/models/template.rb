@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Модель Template
 class Template < Sequel::Model
   TYPE = {
     'Bronze' => 0,	# только кэшбек

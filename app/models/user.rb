@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Модель User
 class User < Sequel::Model
   many_to_one :template
 end

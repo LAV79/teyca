@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Модель Operation
 class Operation < Sequel::Model
   # many_to_one :user
 
@@ -35,7 +36,7 @@ class Operation < Sequel::Model
         pos[:value] = prods[pos[:id]] ? prods[pos[:id]][:value] : nil
 
         cost = pos[:price].to_f * pos[:quantity]
-        
+
         case pos[:type]
         when 'discount'
           pos[:type_desc] = "Дополнительная скидка #{pos[:value]}%"
@@ -46,7 +47,8 @@ class Operation < Sequel::Model
           cashback_summ += cost * pos[:value].to_f / 100
         when 'noloyalty'
           pos[:type_desc] = 'Не участвует в системе лояльности'
-          pos[:discount_percent], pos[:discount_summ] = [0.0, 0.0]
+          pos[:discount_percent] = 0.0
+          pos[:discount_summ] = 0.0
           noloyalty_summ += cost
         else
           pos[:type_desc] = nil
@@ -64,7 +66,8 @@ class Operation < Sequel::Model
       summ_for_cash = (summ - noloyalty_summ - discount_summ - cashback_summ)
       per_cash = user.template[:cashback].to_f / 100
 
-      res[:cashback][:will_add] = templ_type == 2 ? cashback_summ.round : (cashback_summ + summ_for_cash * per_cash).round
+      res[:cashback][:will_add] =
+        templ_type == 2 ? cashback_summ.round : (cashback_summ + summ_for_cash * per_cash).round
 
       res[:discount][:summ] = discount_summ.round(2)
       res[:discount][:value] = "#{(res[:discount][:summ] / summ * 100).round(2)}%"
@@ -76,7 +79,6 @@ class Operation < Sequel::Model
       res[:summ] = summ - res[:discount][:summ]
 
       begin
-
         add_operation_by(res)
 
         res[:operation_id] = oper[:id]
@@ -85,7 +87,6 @@ class Operation < Sequel::Model
       rescue StandardError => e
         Result.error("Ошибка выполенния: #{e.message}")
       end
-
     end
 
     def submit(params)
@@ -117,10 +118,10 @@ class Operation < Sequel::Model
       check_summ = oper[:check_summ] - params[:write_off]
 
       res[:operation][:cashback] = if templ_type == 2
-                                      ((1 - params[:write_off] / check_summ) * oper[:cashback]).round
-                                    else
-                                      (prod_cash + (summ - prod_cash) * per_cash).round
-                                    end
+                                     ((1 - params[:write_off] / check_summ) * oper[:cashback]).round
+                                   else
+                                     (prod_cash + (summ - prod_cash) * per_cash).round
+                                   end
 
       res[:operation][:cashback_percent] = (res[:operation][:cashback] / check_summ * 100).round
       res[:operation][:write_off] = params[:write_off]
@@ -164,13 +165,13 @@ class Operation < Sequel::Model
     end
 
     def prod_discount(cost, val)
-      if templ_type == 0
+      if templ_type.zero?
         [val.to_f, (val.to_f * cost / 100).round(2)]
       else
         per_dis = val.to_f + user.template[:discount].to_f
         [per_dis, (per_dis * cost / 100).round(2)]
       end
-    end  
+    end
 
     def templ_type = Template::TYPE[user.template[:name]]
 

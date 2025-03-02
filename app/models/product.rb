@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
+# Модель Product
 class Product < Sequel::Model
-
   def self.find_by(ids) = where(id: ids)
 end
 

@@ -1,17 +1,20 @@
+# frozen_string_literal: true
+
+# Класс для возрата результата
 class Result
-	attr_accessor :ans, :error
+  attr_accessor :ans, :error
 
-	def initialize(ans: {}, success: true, error: '')
-		@ans, @success, @error = ans, success, error
-	end
+  def initialize(ans: {}, success: true, error: '')
+    @ans = ans
+    @success = success
+    @error = error
+  end
 
-	def success? = @success
+  def success? = @success
 
-	class << self
+  class << self
+    def error(err) = new(error: err, success: false)
 
-		def error(e) = self.new(error: e, success: false)
-
-		def success(a) = self.new(ans: a)
-
-	end	
+    def success(ans) = new(ans: ans)
+  end
 end
