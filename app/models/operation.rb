@@ -75,11 +75,17 @@ class Operation < Sequel::Model
 
       res[:summ] = summ - res[:discount][:summ]
 
-      add_operation_by(res)
+      begin
 
-      res[:operation_id] = oper[:id]
+        add_operation_by(res)
 
-      Result.success(res) 
+        res[:operation_id] = oper[:id]
+
+        Result.success(res)
+      rescue StandardError => e
+        Result.error("Ошибка выполенния: #{e.message}")
+      end
+
     end
 
     def submit(params)
@@ -120,9 +126,13 @@ class Operation < Sequel::Model
       res[:operation][:write_off] = params[:write_off]
       res[:operation][:check_summ] = check_summ.round
 
-      update_operation_by(res)
+      begin
+        update_operation_by(res)
 
-      Result.success(res)
+        Result.success(res)
+      rescue StandardError => e
+        Result.error("Ошибка выполенния: #{e.message}")
+      end
     end
 
     private
