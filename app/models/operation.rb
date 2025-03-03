@@ -12,6 +12,7 @@ class Operation < Sequel::Model
       return res unless res.success?
 
       @user = User[params[:user_id]]
+ 
       return Result.error('Клиент не найден!') unless user
 
       ids = params[:positions].map { _1[:id] }
@@ -173,7 +174,9 @@ class Operation < Sequel::Model
       end
     end
 
-    def templ_type = Template::TYPE[user.template[:name]]
+    def templ_type 
+      @templ_type ||= Template::TYPE[user.template[:name]]
+    end
 
     def validate_calculate(params)
       # здесь возможно дописать валидацию по параметрам пока оставил заглушку
